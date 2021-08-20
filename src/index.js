@@ -43,3 +43,122 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+// Initialise Node libraries
+const express = require("express")
+const fs = require("fs")
+const dir = require("node-dir")
+
+
+function addCoreCode(websitePath, port){
+  const coreData = 
+
+`
+const express = require("express")
+const app = express()
+
+app.get('/', (req,res) => {
+  res.sendFile('index.html')})
+  
+app.listen(${port})
+`
+return coreData
+}
+
+function createNewServe(site, typeFile, websitePath){
+  if (typeFile == "PHP"){
+    const newServe = 
+    `
+
+    app.get('/${site.slice(0, -4)}', (req,res) => {
+    res.sendFile('${websitePath}' +'${site}')
+  })
+
+    app.get('/${site}', (req,res) => {
+    res.sendFile('${websitePath}' +'${site}')
+  })
+
+    `
+  } else{
+     const newServe = 
+    `
+
+    app.get('/${site.slice(0, -5)}', (req,res) => {
+    res.sendFile('${websitePath}' +'${site}')
+  })
+
+    app.get('/${site}', (req,res) => {
+    res.sendFile('${websitePath}' +'${site}')
+  })
+
+    `
+    return newServe
+  }
+}
+
+
+// Arrays to store pages that can be served
+var htmlFiles = []
+var phpFiles = []
+
+// Current directory of the file
+
+
+function createServer(projectName, database, port, htmlOrPhP, websitePath){
+    //Creating initial file
+    fs.mkdir("./projects/" + projectName, function(err) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log("New directory successfully created.")
+    }
+  })
+    const currD = websitePath
+    fs.writeFile("projects/"+projectName+"/" + projectName + ".js", addCoreCode(websitePath, port), (err,fd) =>{
+      if (err){
+        console.log(err)
+      }else{
+        console.log("added core data")
+      }
+    })
+
+    // Reading all html and php pages in the directory
+    dir.files(websitePath, function(err, files) { 
+      
+      // checks the file extension to determine the file type (html/php) and adds it to an array of files with that file type
+      files.forEach(file =>{
+
+          var file = String(file).slice(currD.length + 1) // removes the working path from the full path
+          
+          if (/html$/.test(file)) {
+              htmlFiles.push(file)
+
+            } else if (/php$/.test(file)) {
+              phpFiles.push(file)
+            }
+
+
+      })
+
+      htmlFiles.forEach(htmlf =>{
+      console.log("here")
+      fs.appendFile("projects/"+projectName+ "/" + projectName + ".js", createNewServe(htmlf, "html", websitePath), (err, fd) =>{
+        if (err){
+          console.log(err)
+        }else{
+          console.log("added html serve")
+        }
+      })
+    });
+            
+    });
+
+
+
+}
+
+createServer("server", true, 3000, true,"C:/Users/great/Documents/Important Stuff/flash_games")
+// Read the Options ticked and variables from the html
+// Create a new js file in projects folder and name it with the project name
+// Write core server code with expressjs and filesystem in node
+// 
+
