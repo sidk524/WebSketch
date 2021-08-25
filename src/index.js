@@ -47,8 +47,9 @@ app.on('activate', () => {
 const express = require("express")
 const fs = require("fs")
 const dir = require("node-dir")
+const cmd = require("child_process").exec
 
-
+// core express code
 function addCoreCode(websitePath, port){
   const coreData = 
 
@@ -57,53 +58,151 @@ const express = require("express")
 const app = express()
 
 app.get('/', (req,res) => {
-  res.sendFile('index.html')})
+res.sendFile('${websitePath}' +'/index.html')  
+  })
   
-app.listen(${port})
+app.listen(${port}, function(err){
+  if (err) console.log(err)
+  console.log("server listening on port ${port}" )
+})
 `
+
 return coreData
 }
+// server Package Json code
+function createPackageJson (projectName) {
+  let packageJ = `
+  {
+  "name": "${projectName}",
+  "version": "1.0.0",
+  "description": "",
+  "main": "${projectName}.js",
+  "scripts": {
+    "test": "${projectName}"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "npm": "^7.21.0"
+  }
+}
+`
 
-function createNewServe(site, typeFile, websitePath){
-  if (typeFile == "PHP"){
+return packageJ
+}
+
+
+function createNewServe(__site, typeFile, __websitePath){
+  if (typeFile == "php"){
     const newServe = 
     `
 
-    app.get('/${site.slice(0, -4)}', (req,res) => {
-    res.sendFile('${websitePath}' +'${site}')
+    app.get('/${__site.slice(0, -4)}', (req,res) => {
+    res.sendFile('${__websitePath}' +'/${__site}')
   })
 
-    app.get('/${site}', (req,res) => {
-    res.sendFile('${websitePath}' +'${site}')
-  })
-
-    `
-  } else{
-     const newServe = 
-    `
-
-    app.get('/${site.slice(0, -5)}', (req,res) => {
-    res.sendFile('${websitePath}' +'${site}')
-  })
-
-    app.get('/${site}', (req,res) => {
-    res.sendFile('${websitePath}' +'${site}')
+    app.get('/${__site}', (req,res) => {
+    res.sendFile('${__websitePath}' +'/${__site}')
   })
 
     `
     return newServe
+  } 
+
+
+  else if(typeFile == "html"){
+     const newServe = 
+    `
+
+    app.get('/${__site.slice(0, -5)}', (req,res) => {
+    res.sendFile('${__websitePath}' +'/${__site}')
+  })
+
+    app.get('/${__site}', (req,res) => {
+    res.sendFile('${__websitePath}' +'/${__site}')
+  })
+
+    `
+    return newServe
+  } else{
+    const newServe = 
+    `
+    
+    app.get('/${__site}', (req,res) => {
+    res.sendFile('${__websitePath}' +'/${__site}')
+  })
+  
+  
+  `
+
+  
+  
+  return newServe
   }
+  
 }
 
+function installNodePackages(projectPath){
+  console.log(projectPath)
+  /*
+ var spawn = require('child_process').spawn;
+var child = spawn('cd ' + projectPath + '\nnpm install', {
+  shell: true
+});
+child.stderr.on('data', function (data) {
+  console.error("STDERR:", data.toString());
+});
+child.stdout.on('data', function (data) {
+  console.log("STDOUT:", data.toString());
+});
+child.on('exit', function (exitCode) {
+  console.log("Child exited with code: " + exitCode);
+});
+*/
+cmd('cd '+projectPath+'&npm install', (err, stdout, stderr) => {
+    if (err){
+      console.log(err.message)
+      return
+    } else if (stderr){
+      console.log(`stderr: ${stderr}`);
+      
+    } else{
+      console.log(`stdout: ${stdout}`)
+    }
 
+  });
+
+  //NEED TO BE THE SAME INSTANCE
+  //const npm = cmd.spawn('npm install'
+    /*(err, stdout, stderr) => {
+    if (err){
+      console.log(err.message)
+      return
+    } else if (stderr){
+      console.log(`stderr: ${stderr}`);
+      
+    } else{
+      console.log(`stdout: ${stdout}`)
+    }
+
+  })*/
+ 
+
+}
 // Arrays to store pages that can be served
 var htmlFiles = []
 var phpFiles = []
+var jsFiles = []
+var cssFiles = []
+var mediaFiles = []
 
-// Current directory of the file
 
+// Main function
 
 function createServer(projectName, database, port, htmlOrPhP, websitePath){
+    const projectD = process.cwd() + "\\projects\\"+projectName
     //Creating initial file
     fs.mkdir("./projects/" + projectName, function(err) {
     if (err) {
@@ -111,7 +210,9 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
     } else {
       console.log("New directory successfully created.")
     }
-  })
+    })
+
+
     const currD = websitePath
     fs.writeFile("projects/"+projectName+"/" + projectName + ".js", addCoreCode(websitePath, port), (err,fd) =>{
       if (err){
@@ -121,44 +222,76 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
       }
     })
 
-    // Reading all html and php pages in the directory
+    
+    fs.writeFile("projects/"+projectName+"/" +"package.json", createPackageJson(projectName), (err,fd) =>{
+      if (err){
+        console.log(err)
+      }else{
+        console.log("Package.json")
+      }
+    })
+
+
+    // Going through each file 
     dir.files(websitePath, function(err, files) { 
       
-      // checks the file extension to determine the file type (html/php) and adds it to an array of files with that file type
+      // checks the file extension to determine the file type and adds it to an array of files with that file type
       files.forEach(file =>{
 
           var file = String(file).slice(currD.length + 1) // removes the working path from the full path
-          
-          if (/html$/.test(file)) {
+          file = file.replace(/\\/g, "/") // replaces backslash
+          lowerFile = file.toLowerCase() // makes extensions lowercase for COMPARISON ONLY
+
+
+          if (/html$/.test(lowerFile)) {
               htmlFiles.push(file)
-
-            } else if (/php$/.test(file)) {
+            } else if (/php$/.test(lowerFile)) {
               phpFiles.push(file)
+            } else if (/css$/.test(lowerFile)) {
+              cssFiles.push(file)
+            } else if (/js$/.test(lowerFile)) {
+              jsFiles.push(file)
+            } else {
+              mediaFiles.push(file)
             }
-
-
+          
       })
+      
 
-      htmlFiles.forEach(htmlf =>{
-      console.log("here")
-      fs.appendFile("projects/"+projectName+ "/" + projectName + ".js", createNewServe(htmlf, "html", websitePath), (err, fd) =>{
-        if (err){
-          console.log(err)
-        }else{
-          console.log("added html serve")
-        }
-      })
+      function appendingFiles(array, fileType) {
+
+        array.forEach(file =>{
+
+          
+          fs.appendFile("projects/"+projectName+ "/" + projectName + ".js", createNewServe(file, fileType, websitePath), (err, fd) =>{
+
+            if (err){
+              console.log(err)
+            } 
+          })
+
+        });
+
+      }
+
+
+      var fileTypes = ["html", "php", "media", "js", "css"]
+      var arrays = [htmlFiles, phpFiles, mediaFiles, jsFiles, cssFiles]
+      
+      for (var i = 0; i < fileTypes.length; i ++) {
+        appendingFiles(arrays[i], fileTypes[i])
+      }
+
+      installNodePackages(projectD)
     });
-            
-    });
-
-
-
+    
 }
 
-createServer("server", true, 3000, true,"C:/Users/great/Documents/Important Stuff/flash_games")
+createServer("server", true, 3001, true,"C:/Users/great/OneDrive/Documents/Important Stuff/flash_games")
 // Read the Options ticked and variables from the html
 // Create a new js file in projects folder and name it with the project name
 // Write core server code with expressjs and filesystem in node
 // 
+
+//PROBLEMS TO ADDRESS: NPM INSTALL IS NEEDED TO RUN THE SERVER
 

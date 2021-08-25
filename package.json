@@ -45,6 +45,7 @@
     }
   },
   "dependencies": {
+    "child_process": "^1.0.2",
     "electron-squirrel-startup": "^1.0.0",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
@@ -56,7 +57,7 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.59",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.59",
     "@electron-forge/maker-zip": "^6.0.0-beta.59",
-    "electron-prebuilt-compile": "8.2.0",
-    "electron": "13.2.1"
+    "electron": "^13.2.1",
+    "electron-prebuilt-compile": "8.2.0"
   }
 }
