@@ -144,53 +144,6 @@ function createNewServe(__site, typeFile, __websitePath){
   
 }
 
-function installNodePackages(projectPath){
-  console.log(projectPath)
-  /*
- var spawn = require('child_process').spawn;
-var child = spawn('cd ' + projectPath + '\nnpm install', {
-  shell: true
-});
-child.stderr.on('data', function (data) {
-  console.error("STDERR:", data.toString());
-});
-child.stdout.on('data', function (data) {
-  console.log("STDOUT:", data.toString());
-});
-child.on('exit', function (exitCode) {
-  console.log("Child exited with code: " + exitCode);
-});
-*/
-cmd('cd '+projectPath+'&npm install', (err, stdout, stderr) => {
-    if (err){
-      console.log(err.message)
-      return
-    } else if (stderr){
-      console.log(`stderr: ${stderr}`);
-      
-    } else{
-      console.log(`stdout: ${stdout}`)
-    }
-
-  });
-
-  //NEED TO BE THE SAME INSTANCE
-  //const npm = cmd.spawn('npm install'
-    /*(err, stdout, stderr) => {
-    if (err){
-      console.log(err.message)
-      return
-    } else if (stderr){
-      console.log(`stderr: ${stderr}`);
-      
-    } else{
-      console.log(`stdout: ${stdout}`)
-    }
-
-  })*/
- 
-
-}
 // Arrays to store pages that can be served
 var htmlFiles = []
 var phpFiles = []
@@ -292,7 +245,6 @@ createServer("server", true, 3001, true, "C:/Users/skambli1/OneDrive - The Perse
 // Read the Options ticked and variables from the html
 // Create a new js file in projects folder and name it with the project name
 // Write core server code with expressjs and filesystem in node
-// 
 
 //PROBLEMS TO ADDRESS: NPM INSTALL IS NEEDED TO RUN THE SERVER
 
