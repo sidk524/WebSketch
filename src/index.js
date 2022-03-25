@@ -47,7 +47,8 @@ app.on('activate', () => {
 const express = require("express")
 const fs = require("fs")
 const dir = require("node-dir")
-const cmd = require("child_process").exec
+
+const npmi = require("npmi")
 
 // core express code
 function addCoreCode(websitePath, port){
@@ -150,9 +151,10 @@ var phpFiles = []
 var jsFiles = []
 var cssFiles = []
 var mediaFiles = []
-
+var options;
 
 // Main function
+
 
 function createServer(projectName, database, port, htmlOrPhP, websitePath){
     const projectD = process.cwd() + "\\projects\\"+projectName
@@ -236,12 +238,31 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
         appendingFiles(arrays[i], fileTypes[i])
       }
 
-      installNodePackages(projectD)
+      
+       options = {
+      name: 'express',    
+      
+      path: 'projects/' + projectName,              
+      forceInstall: false,
+      npmLoad: {              
+          loglevel: 'silent'  
+      }
+};
+npmi(options, function (err, result) {
+    if (err) {
+        if      (err.code === npmi.LOAD_ERR)    console.log('npm load error');
+        else if (err.code === npmi.INSTALL_ERR) console.log('npm install error');
+        return console.log(err.message);
+    }
+
+    // installed
+    console.log(options.name+'@'+options.version+' installed successfully in '+path.resolve(options.path));
+});
     });
     
 }
 
-createServer("server", true, 3001, true, "C:/Users/skambli1/OneDrive - The Perse School/Documents/Website")
+createServer("server", true, 3001, true, "C:/Users/great/OneDrive/Documents/Important Stuff/Website/Example Website")
 // Read the Options ticked and variables from the html
 // Create a new js file in projects folder and name it with the project name
 // Write core server code with expressjs and filesystem in node
