@@ -233,6 +233,7 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
 
 
     // Going through each file 
+   
     dir.files(websitePath, function(err, files) { 
       
       // checks the file extension to determine the file type and adds it to an array of files with that file type
@@ -287,7 +288,7 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
     
 }
 
-createServer("server", true, 3001, true,"C:/Users/great/OneDrive/Documents/Important Stuff/flash_games")
+createServer("server", true, 3001, true, "C:/Users/skambli1/OneDrive - The Perse School/Documents/Website")
 // Read the Options ticked and variables from the html
 // Create a new js file in projects folder and name it with the project name
 // Write core server code with expressjs and filesystem in node
