@@ -1,10 +1,11 @@
 {
-  "name": "server",
+  "name": "Example",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "Example.js",
   "scripts": {
-    "test": "server"
+    "test": "Example",
+    "start": "node Example.js"
   },
   "keywords": [],
   "author": "",

@@ -50,6 +50,8 @@ const dir = require("node-dir")
 
 const npmi = require("npmi")
 
+
+
 // core express code
 function addCoreCode(websitePath, port){
   const coreData = 
@@ -79,7 +81,8 @@ function createPackageJson (projectName) {
   "description": "",
   "main": "${projectName}.js",
   "scripts": {
-    "test": "${projectName}"
+    "test": "${projectName}", 
+    "start": "node ${projectName}.js" 
   },
   "keywords": [],
   "author": "",
@@ -93,7 +96,7 @@ function createPackageJson (projectName) {
 
 return packageJ
 }
-
+var x = "C:/Users/great/OneDrive/Documents/Important Stuff/Website/Example Website"
 
 function createNewServe(__site, typeFile, __websitePath){
   if (typeFile == "php"){
@@ -262,10 +265,30 @@ npmi(options, function (err, result) {
     
 }
 
-createServer("server", true, 3001, true, "C:/Users/great/OneDrive/Documents/Important Stuff/Website/Example Website")
 // Read the Options ticked and variables from the html
 // Create a new js file in projects folder and name it with the project name
 // Write core server code with expressjs and filesystem in node
 
-//PROBLEMS TO ADDRESS: NPM INSTALL IS NEEDED TO RUN THE SERVER
+//PROBLEMS TO ADDRESS: NPM INSTALL IS  NEEDED TO RUN THE SERVER
 
+const serverApp = express()
+const bodyParser = require("body-parser");
+
+serverApp.use(bodyParser.urlencoded({ extended: false }));
+serverApp.use(bodyParser.json());
+
+
+
+serverApp.post('/createserver', (req,res) => {
+    createServer(req.body.name, true, 3001, true, req.body.path)
+    res.send("Good")
+})
+  
+serverApp.get("/", (req,res)=>{
+  console.log("here")
+})
+
+serverApp.listen(3002, function(err){
+  if (err) console.log(err)
+  console.log("server listening on port 3002" )
+})
