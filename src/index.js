@@ -48,8 +48,6 @@ const express = require("express")
 const fs = require("fs")
 const dir = require("node-dir")
 
-const npmi = require("npmi")
-
 
 
 // core express code
@@ -96,7 +94,6 @@ function createPackageJson (projectName) {
 
 return packageJ
 }
-var x = "C:/Users/great/OneDrive/Documents/Important Stuff/Website/Example Website"
 
 function createNewServe(__site, typeFile, __websitePath){
   if (typeFile == "php"){
@@ -137,10 +134,7 @@ function createNewServe(__site, typeFile, __websitePath){
     app.get('/${__site}', (req,res) => {
     res.sendFile('${__websitePath}' +'/${__site}')
   })
-  
-  
   `
-
   
   
   return newServe
@@ -156,8 +150,12 @@ var cssFiles = []
 var mediaFiles = []
 var options;
 
-// Main function
+const { install } = require('lmify')
+const { setRootDir } = require('lmify')
 
+
+// Main function
+// C:/Users/great/OneDrive/Documents/Important Stuff/Website/Example Website
 
 function createServer(projectName, database, port, htmlOrPhP, websitePath){
     const projectD = process.cwd() + "\\projects\\"+projectName
@@ -233,50 +231,26 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
 
       }
 
-
       var fileTypes = ["html", "php", "media", "js", "css"]
       var arrays = [htmlFiles, phpFiles, mediaFiles, jsFiles, cssFiles]
       
       for (var i = 0; i < fileTypes.length; i ++) {
         appendingFiles(arrays[i], fileTypes[i])
       }
-
       
-       options = {
-      name: 'express',    
-      
-      path: 'projects/' + projectName,              
-      forceInstall: false,
-      npmLoad: {              
-          loglevel: 'silent'  
-      }
-};
-npmi(options, function (err, result) {
-    if (err) {
-        if      (err.code === npmi.LOAD_ERR)    console.log('npm load error');
-        else if (err.code === npmi.INSTALL_ERR) console.log('npm install error');
-        return console.log(err.message);
-    }
+      setRootDir(projectD)
+      install('express')
 
-    // installed
-    console.log(options.name+'@'+options.version+' installed successfully in '+path.resolve(options.path));
-});
+
     });
     
 }
-
-// Read the Options ticked and variables from the html
-// Create a new js file in projects folder and name it with the project name
-// Write core server code with expressjs and filesystem in node
-
-//PROBLEMS TO ADDRESS: NPM INSTALL IS  NEEDED TO RUN THE SERVER
 
 const serverApp = express()
 const bodyParser = require("body-parser");
 
 serverApp.use(bodyParser.urlencoded({ extended: false }));
 serverApp.use(bodyParser.json());
-
 
 
 serverApp.post('/createserver', (req,res) => {
