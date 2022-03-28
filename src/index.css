@@ -26,7 +26,6 @@ body {
 
 .btn-primary{
   margin: 5px 5px 5px 5px;
-  
 }
 
 .input-group{
@@ -35,4 +34,42 @@ body {
 }
 .submitButton{
   margin:auto;
+}
+
+
+.projects{
+  width: 70%;
+  margin: auto;
+  text-align: center;
+  
+}
+.list-group-item{
+  margin: 10px 10px 10px 10px;
+  color: white;
+  background-color: #0d6efd;
+  border-radius: 5px;
+}
+
+#loading-text{
+  color: white;
+  margin: auto;
+}
+
+.hide{
+  display: none !important;
+}
+
+#go-back{
+  margin-top: -20%;
+  margin-left: 5%;
+}
+
+.alert{
+  width: 30%;
+  margin-left: 65%;
+  margin-top: -10%;
+  background-color: #198754;
+  color:white;
+    
+    font-family: 'Trebuchet MS', sans-serif;
 }

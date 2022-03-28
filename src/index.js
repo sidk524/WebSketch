@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-
+var activeProject = "";
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
@@ -15,8 +15,6 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
-
- 
 };
 
 // This method will be called when Electron has finished
@@ -43,6 +41,8 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+
 // Initialise Node libraries
 const express = require("express")
 const fs = require("fs")
@@ -155,7 +155,6 @@ const { setRootDir } = require('lmify')
 
 
 // Main function
-// C:/Users/great/OneDrive/Documents/Important Stuff/Website/Example Website
 
 function createServer(projectName, database, port, htmlOrPhP, websitePath){
     const projectD = process.cwd() + "\\projects\\"+projectName
@@ -240,8 +239,6 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
       
       setRootDir(projectD)
       install('express')
-
-
     });
     
 }
@@ -251,7 +248,8 @@ const bodyParser = require("body-parser");
 
 serverApp.use(bodyParser.urlencoded({ extended: false }));
 serverApp.use(bodyParser.json());
-
+var projs
+var fileNames
 
 serverApp.post('/createserver', (req,res) => {
     createServer(req.body.name, true, 3001, true, req.body.path)
@@ -262,7 +260,48 @@ serverApp.get("/", (req,res)=>{
   console.log("here")
 })
 
+const cp = require("child_process");
+const { stderr } = require('process');
+
+serverApp.get("/getprojects", (req,res)=>{
+  
+  fileNames = fs.readdirSync(process.cwd()+"/projects");
+  
+  res.send(JSON.stringify(fileNames))
+})
+
+var projectSTD = cp.spawn("node",["nothing.js"])
+
+serverApp.post('/openproject', (req,res) => {
+  projectSTD.kill('SIGTERM');
+  var projName = req.body.name
+  activeProject = projName;
+  console.log("node "+projName + ".js")
+  const exec_options = {
+    cwd: process.cwd() + "\\projects\\" + projName,
+    env:null,
+    encoding: "utf8",
+    timeout:0,
+    maxBuffer: 200*1024,
+    killSignal: "SIGTERM"
+  }
+  projectSTD = cp.spawn("node", [projName + ".js"], exec_options)
+  projectSTD.stdout.on("data", stdout =>{
+    console.log(stdout.toString())
+  })
+  
+  res.send("Good")
+
+})
+
+serverApp.get("/checkactiveserver", (req,res) => {
+  
+  res.send(JSON.stringify(activeProject))
+})
+
 serverApp.listen(3002, function(err){
   if (err) console.log(err)
   console.log("server listening on port 3002" )
 })
+
+
