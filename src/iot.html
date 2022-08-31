@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kambli Bansiya household</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body style="text-align: center;background-color: #28282B; margin-top: 15%;">
+    
+
+<div id="title" style="color: white; font-size: 50px;"><u><b>Control Motor</b></u></div>
+<div id="content">
+    <button type="button" id="clockwise"  onclick="spin(true)" class="btn btn-primary">Spin clockwise</button>
+<button id="anticlockwise" class="btn btn-primary" onclick="spin(false)">Spin anticlockwise</button>
+</div>
+<script>
+
+
+    var req;
+    function spin(clockwise){
+        req = new XMLHttpRequest();
+        var url = "http://192.168.68.115:3000/spin"
+        if (clockwise){
+            url = url + "clockwise"
+        }
+        
+        req.open("GET", url, true);
+        req.send();
+       
+            document.getElementById("clockwise").innerHTML = "Stop Spinning"
+            document.getElementById("clockwise").setAttribute("onclick","stopSpin()" ) 
+            document.getElementById("anticlockwise").innerHTML = "Stop Spinning"
+            document.getElementById("anticlockwise").setAttribute("onclick","stopSpin()" ) 
+        
+        
+    };
+
+    function stopSpin(){
+        req = new XMLHttpRequest();
+        var url = "http://192.168.68.115:3000/stopspin"
+        
+            document.getElementById("clockwise").innerHTML = "Spin clockwise"
+            document.getElementById("clockwise").setAttribute("onclick","spin(true)" ) 
+            document.getElementById("anticlockwise").innerHTML = "Spin anticlockwise"
+            document.getElementById("anticlockwise").setAttribute("onclick","spin(false)" ) 
+        
+    
+        req.open("GET", url, true);
+        req.send();
+    }
+        </script>
+</body>
+</html>

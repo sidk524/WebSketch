@@ -36,7 +36,6 @@ body {
   margin:auto;
 }
 
-
 .projects{
   width: 70%;
   margin: auto;
@@ -73,3 +72,15 @@ body {
     
     font-family: 'Trebuchet MS', sans-serif;
 }
+
+.del{
+  color: #dc3545 !important;
+}
+
+
+#port{
+  color: white;
+}
+
+
+

@@ -1,30 +1,55 @@
+// INITIALISE NODE LIBRARIES
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const express = require("express")
+const fs = require("fs")
+const dir = require("node-dir")
+const { install } = require('lmify')
+const { setRootDir } = require('lmify')
+const bodyParser = require("body-parser");
+const cp = require("child_process");
+const { stderr } = require('process');
+var rimraf = require("rimraf");
+const { json } = require('express/lib/response');
+
+// GLOBAL CONSTANTS
+
+const serverApp = express()
+
+//INITIALISE GLOBAL VARIABLES
 var activeProject = "";
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
+var htmlFiles = []
+var phpFiles = []
+var jsFiles = []
+var cssFiles = []
+var mediaFiles = []
+var options;
+var projectSTD = cp.spawn("node",["nothing.js"])
+var openPort
+var stdout
+var file
+var projs
+var fileNames
+var activePort = 0
+
+
+//DRIVER CODE
+if (require('electron-squirrel-startup')) { 
   app.quit();
 }
 
 const createWindow = () => {
-  // Create the browser window.
+  
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
   });
 
-  // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 };
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+app.on('ready', createWindow);
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -32,21 +57,10 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
-
-
-// Initialise Node libraries
-const express = require("express")
-const fs = require("fs")
-const dir = require("node-dir")
 
 
 
@@ -99,24 +113,19 @@ function createNewServe(__site, typeFile, __websitePath){
   if (typeFile == "php"){
     const newServe = 
     `
-
     app.get('/${__site.slice(0, -4)}', (req,res) => {
     res.sendFile('${__websitePath}' +'/${__site}')
   })
-
     app.get('/${__site}', (req,res) => {
     res.sendFile('${__websitePath}' +'/${__site}')
   })
-
     `
     return newServe
   } 
 
-
   else if(typeFile == "html"){
      const newServe = 
     `
-
     app.get('/${__site.slice(0, -5)}', (req,res) => {
     res.sendFile('${__websitePath}' +'/${__site}')
   })
@@ -142,17 +151,7 @@ function createNewServe(__site, typeFile, __websitePath){
   
 }
 
-// Arrays to store pages that can be served
-var htmlFiles = []
-var phpFiles = []
-var jsFiles = []
-var cssFiles = []
-var mediaFiles = []
-var options;
-
-const { install } = require('lmify')
-const { setRootDir } = require('lmify')
-
+var httpProxy = require('http-proxy');
 
 // Main function
 
@@ -166,8 +165,6 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
       console.log("New directory successfully created.")
     }
     })
-
-
     const currD = websitePath
     fs.writeFile("projects/"+projectName+"/" + projectName + ".js", addCoreCode(websitePath, port), (err,fd) =>{
       if (err){
@@ -176,19 +173,15 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
         console.log("added core data")
       }
     })
-
     
-    fs.writeFile("projects/"+projectName+"/" +"package.json", createPackageJson(projectName), (err,fd) =>{
+    fs.writeFile("projects/"+projectName+"/" +"yeah bro package.json", createPackageJson(projectName), (err,fd) =>{
       if (err){
         console.log(err)
       }else{
         console.log("Package.json")
       }
     })
-
-
-    // Going through each file 
-   
+    // Going through each file
     dir.files(websitePath, function(err, files) { 
       
       // checks the file extension to determine the file type and adds it to an array of files with that file type
@@ -197,7 +190,6 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
           var file = String(file).slice(currD.length + 1) // removes the working path from the full path
           file = file.replace(/\\/g, "/") // replaces backslash
           lowerFile = file.toLowerCase() // makes extensions lowercase for COMPARISON ONLY
-
 
           if (/html$/.test(lowerFile)) {
               htmlFiles.push(file)
@@ -210,72 +202,64 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
             } else {
               mediaFiles.push(file)
             }
-          
+    
       })
-      
-
+    
       function appendingFiles(array, fileType) {
-
         array.forEach(file =>{
-
-          
           fs.appendFile("projects/"+projectName+ "/" + projectName + ".js", createNewServe(file, fileType, websitePath), (err, fd) =>{
-
             if (err){
               console.log(err)
             } 
           })
 
         });
-
       }
+
 
       var fileTypes = ["html", "php", "media", "js", "css"]
       var arrays = [htmlFiles, phpFiles, mediaFiles, jsFiles, cssFiles]
-      
       for (var i = 0; i < fileTypes.length; i ++) {
         appendingFiles(arrays[i], fileTypes[i])
       }
-      
+
       setRootDir(projectD)
       install('express')
     });
     
 }
 
-const serverApp = express()
-const bodyParser = require("body-parser");
+
+
+
+// Inner server to communicate with the frontend
 
 serverApp.use(bodyParser.urlencoded({ extended: false }));
 serverApp.use(bodyParser.json());
-var projs
-var fileNames
+
 
 serverApp.post('/createserver', (req,res) => {
-    createServer(req.body.name, true, 3001, true, req.body.path)
+    createServer(req.body.name, true, req.body.port, true, req.body.path)
     res.send("Good")
 })
-  
+
+
 serverApp.get("/", (req,res)=>{
   console.log("here")
 })
 
-const cp = require("child_process");
-const { stderr } = require('process');
 
 serverApp.get("/getprojects", (req,res)=>{
-  
   fileNames = fs.readdirSync(process.cwd()+"/projects");
-  
   res.send(JSON.stringify(fileNames))
 })
 
-var projectSTD = cp.spawn("node",["nothing.js"])
+
 
 serverApp.post('/openproject', (req,res) => {
   projectSTD.kill('SIGTERM');
   var projName = req.body.name
-  activeProject = projName;
+  activeProject = projName
   console.log("node "+projName + ".js")
   const exec_options = {
     cwd: process.cwd() + "\\projects\\" + projName,
@@ -287,21 +271,79 @@ serverApp.post('/openproject', (req,res) => {
   }
   projectSTD = cp.spawn("node", [projName + ".js"], exec_options)
   projectSTD.stdout.on("data", stdout =>{
-    console.log(stdout.toString())
+    stdout = stdout.toString().split("port ")
+    port = stdout[1]
+    activePort = port
+    res.send(port)
+    console.log(stdout)
   })
-  
-  res.send("Good")
-
 })
+
 
 serverApp.get("/checkactiveserver", (req,res) => {
-  
-  res.send(JSON.stringify(activeProject))
+  var obj = {"port": activePort, "project": activeProject}
+  res.send(JSON.stringify(obj))
 })
+
+
+serverApp.post('/getport', (req,res) => {
+  console.log(req)
+})
+
+
+serverApp.post("/delproject", (req,res) => {
+  projectSTD.kill('SIGTERM');
+  activeProject = "";
+  activePort = 0
+  console.log(process.cwd() + "\\projects\\"+req.body.name)
+  rimraf(process.cwd() + "\\projects\\"+req.body.name, function (err) {
+    if (err){
+      console.log(err)
+      res.send("Sorry, there was an error deleting that project. Please close any active servers and try again.")
+    } else{
+      res.send("Project deleted successfully")
+    }
+  })
+})
+
+
+serverApp.get("/closeserver", (req,res) => {
+  projectSTD.kill('SIGTERM');
+  res.send(activeProject)
+  activeProject = "";
+  activePort = 0
+})
+
 
 serverApp.listen(3002, function(err){
   if (err) console.log(err)
   console.log("server listening on port 3002" )
 })
 
+// handle /checkwebsitepath post request and send back whether the path is valid or not
+serverApp.post("/checkwebsitepath", (req,res) => {
+  var path = req.body.websitePath
+  var exists = fs.existsSync(path)
+  // check whether the path has html files in it
+  if (exists) {
+    var files = fs.readdirSync(path)
+    htmlFiles = []
+    files.forEach(file =>{
+      lowerFile = file.toLowerCase() 
+      console.log(htmlFiles)
+      // check if the file name ends in .html
+      if (lowerFile.endsWith(".html")) {
+        htmlFiles.push(file)
+      }
+    })
+    if (htmlFiles.length > 0) {
+        res.send(JSON.stringify("true"))
+    } else {
+      console.log("no html files")
+      res.send(JSON.stringify("false"))
+      }
+    } else {
+      console.log("path does not exist")
+      res.send(JSON.stringify("false"))
+    }})
 

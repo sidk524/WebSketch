@@ -6,16 +6,35 @@ getServer.open("GET", "http://localhost:3002/getprojects", true)
 getServer.send()
 getServer.onreadystatechange = function() {
 if (this.readyState == 4 && this.status == 200) {
-        
+  
     projects = JSON.parse(this.responseText)
     var buttons = document.getElementsByClassName("list-group-item-action")
     for (i = 0; i<projects.length; i++){
         buttons[i].classList.remove("hide")
         buttons[i].innerHTML = projects[i]
-    }
+    } buttons[i+1].classList.remove("hide")
+    buttons[i+1].innerHTML = "Close active server"
+    buttons[i+1].setAttribute('onclick','closeProj()')
 }
 }
 
+function closeProj(){
+  if (document.getElementById("activeproj").innerHTML.includes("Active Webserver")){
+    getServer.open("GET", "http://localhost:3002/closeserver", true)
+
+    getServer.send()
+    getServer.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+          var active = this.responseText;
+          alert("Closed server "+ active)
+          document.getElementById("activeproj").innerHTML = "No active webserver"
+          
+  }
+  }
+}else{
+  alert("No server is currently active.")
+}
+}
 
 var openProjectRequest
 function openProject(name){
@@ -24,12 +43,11 @@ function openProject(name){
     openProjectRequest.setRequestHeader("Accept", "application/json");
     openProjectRequest.setRequestHeader("Content-Type", "application/json");
     var data = `{"name": "${name}"}`
-    
+  
     openProjectRequest.send(data)
     openProjectRequest.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          
-          document.getElementById("activeproj").innerHTML = "Active Webserver: " + name
+          document.getElementById("activeproj").innerHTML = "Active Webserver: " + name + "<br>Running on Port: "+ this.responseText
         } 
       };
 }
