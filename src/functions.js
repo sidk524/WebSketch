@@ -46,8 +46,7 @@ function chainFunc(){
         postServer.open("POST", "http://localhost:3002/createserver", true);
         path = inputs[0].value.replace(/\\/g, "/")
         name = inputs[1].value
-        port = document.getElementsByClassName("form-range")[0].value
-        console.log(path)
+        port = document.getElementById("portNum").value
         postServer.setRequestHeader("Accept", "application/json");
         postServer.setRequestHeader("Content-Type", "application/json");
         data = `{
@@ -55,8 +54,6 @@ function chainFunc(){
           "name": "${name}",
           "port":"${port}"
         }`
-      console.log(data)
-      
       postServer.send(data)
       postServer.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -86,17 +83,17 @@ function checkEmpty(){
 
 
 
-function displayPortNum(){
+// function displayPortNum(){
  
 
-  var portInput = document.getElementsByClassName("form-range")[0].value
-  var displayPort = document.getElementsByClassName("form-label")[0]
-  displayPort.innerHTML = `Port Number: ${portInput}`
+//   var portInput = document.getElementsByClassName("form-range")[0].value
+//   var displayPort = document.getElementsByClassName("form-label")[0]
+//   displayPort.innerHTML = `Port Number: ${portInput}`
  
 
-}
+// }
 
 
 
-setInterval(displayPortNum, 10)
+//setInterval(displayPortNum, 10)
 setInterval(checkEmpty, 100)

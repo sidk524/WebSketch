@@ -32,8 +32,9 @@ function delProject(name, id){
           var res = this.responseText
           alert(res)
           document.getElementById("activeproj").innerHTML = "No active webserver"
-          document.getElementById(toString(id)).classList.add("hide")
-        } 
+          // hset display to none for the server that was deleted
+            document.getElementById(id).style.display = "none"        
+          } 
       };
       openProjectRequest.send(data)
 

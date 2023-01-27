@@ -12,6 +12,7 @@ const { stderr } = require('process');
 var rimraf = require("rimraf");
 const { json } = require('express/lib/response');
 
+
 // GLOBAL CONSTANTS
 
 const serverApp = express()
@@ -25,12 +26,14 @@ var cssFiles = []
 var mediaFiles = []
 var options;
 var projectSTD = cp.spawn("node",["nothing.js"])
+var projectSTD2 = cp.spawn("node",["nothing.js"])
 var openPort
 var stdout
 var file
 var projs
 var fileNames
 var activePort = 0
+var projectsToPorts = {}
 
 
 //DRIVER CODE
@@ -69,17 +72,24 @@ function addCoreCode(websitePath, port){
   const coreData = 
 
 `
+
 const express = require("express")
 const app = express()
 
 app.get('/', (req,res) => {
 res.sendFile('${websitePath}' +'/index.html')  
   })
-  
+
+
+
 app.listen(${port}, function(err){
   if (err) console.log(err)
   console.log("server listening on port ${port}" )
 })
+
+app.use(express.static('${websitePath}'))
+
+
 `
 
 return coreData
@@ -105,51 +115,27 @@ function createPackageJson (projectName) {
   }
 }
 `
-
 return packageJ
 }
 
-function createNewServe(__site, typeFile, __websitePath){
-  if (typeFile == "php"){
-    const newServe = 
-    `
-    app.get('/${__site.slice(0, -4)}', (req,res) => {
-    res.sendFile('${__websitePath}' +'/${__site}')
-  })
-    app.get('/${__site}', (req,res) => {
-    res.sendFile('${__websitePath}' +'/${__site}')
-  })
-    `
-    return newServe
-  } 
+function createProxy (port){
+  const proxy = `
+  const http = require('http');
+  const httpProxy = require('http-proxy');
 
-  else if(typeFile == "html"){
-     const newServe = 
-    `
-    app.get('/${__site.slice(0, -5)}', (req,res) => {
-    res.sendFile('${__websitePath}' +'/${__site}')
-  })
+  // Create a proxy server
+  const proxy = httpProxy.createProxyServer({});
 
-    app.get('/${__site}', (req,res) => {
-    res.sendFile('${__websitePath}' +'/${__site}')
-  })
-
-    `
-    return newServe
-  } else{
-    const newServe = 
-    `
-    
-    app.get('/${__site}', (req,res) => {
-    res.sendFile('${__websitePath}' +'/${__site}')
-  })
+  // Listen for incoming traffic on the specified port
+  const port = 80; // replace with the desired port
+  http.createServer((req, res) => {
+    proxy.web(req, res, { target: 'http://localhost:${port}' });
+  }).listen(port);
   `
-  
-  
-  return newServe
-  }
-  
+  return proxy
 }
+
+
 
 var httpProxy = require('http-proxy');
 
@@ -157,7 +143,11 @@ var httpProxy = require('http-proxy');
 
 function createServer(projectName, database, port, htmlOrPhP, websitePath){
     const projectD = process.cwd() + "\\projects\\"+projectName
+
+    projectsToPorts[projectName] = port
+
     //Creating initial file
+
     fs.mkdir("./projects/" + projectName, function(err) {
     if (err) {
       console.log(err)
@@ -165,6 +155,7 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
       console.log("New directory successfully created.")
     }
     })
+
     const currD = websitePath
     fs.writeFile("projects/"+projectName+"/" + projectName + ".js", addCoreCode(websitePath, port), (err,fd) =>{
       if (err){
@@ -174,59 +165,27 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
       }
     })
     
-    fs.writeFile("projects/"+projectName+"/" +"yeah bro package.json", createPackageJson(projectName), (err,fd) =>{
+    fs.writeFile("projects/"+projectName+"/" +"package.json", createPackageJson(projectName), (err,fd) =>{
       if (err){
         console.log(err)
       }else{
         console.log("Package.json")
       }
     })
-    // Going through each file
-    dir.files(websitePath, function(err, files) { 
-      
-      // checks the file extension to determine the file type and adds it to an array of files with that file type
-      files.forEach(file =>{
 
-          var file = String(file).slice(currD.length + 1) // removes the working path from the full path
-          file = file.replace(/\\/g, "/") // replaces backslash
-          lowerFile = file.toLowerCase() // makes extensions lowercase for COMPARISON ONLY
-
-          if (/html$/.test(lowerFile)) {
-              htmlFiles.push(file)
-            } else if (/php$/.test(lowerFile)) {
-              phpFiles.push(file)
-            } else if (/css$/.test(lowerFile)) {
-              cssFiles.push(file)
-            } else if (/js$/.test(lowerFile)) {
-              jsFiles.push(file)
-            } else {
-              mediaFiles.push(file)
-            }
     
-      })
-    
-      function appendingFiles(array, fileType) {
-        array.forEach(file =>{
-          fs.appendFile("projects/"+projectName+ "/" + projectName + ".js", createNewServe(file, fileType, websitePath), (err, fd) =>{
-            if (err){
-              console.log(err)
-            } 
-          })
-
-        });
-      }
-
-
-      var fileTypes = ["html", "php", "media", "js", "css"]
-      var arrays = [htmlFiles, phpFiles, mediaFiles, jsFiles, cssFiles]
-      for (var i = 0; i < fileTypes.length; i ++) {
-        appendingFiles(arrays[i], fileTypes[i])
-      }
-
       setRootDir(projectD)
       install('express')
-    });
     
+    // make the proxy server
+
+    fs.writeFile("projects/"+projectName+"/" + projectName + "Proxy.js", createProxy(port), (err,fd) =>{
+      if (err){
+        console.log(err)
+      }else{
+        console.log("added proxy data")
+      }
+    })
 }
 
 
@@ -257,7 +216,9 @@ serverApp.get("/getprojects", (req,res)=>{
 
 
 serverApp.post('/openproject', (req,res) => {
+
   projectSTD.kill('SIGTERM');
+  projectSTD2.kill('SIGTERM');
   var projName = req.body.name
   activeProject = projName
   console.log("node "+projName + ".js")
@@ -277,6 +238,22 @@ serverApp.post('/openproject', (req,res) => {
     res.send(port)
     console.log(stdout)
   })
+  // run the proxy file thats in the same directory
+  console.log("node "+projName + "Proxy.js")
+  const exec_options2 = {
+    cwd: process.cwd() + "\\projects\\" + projName,
+    env:null,
+    encoding: "utf8",
+    timeout:0,
+    maxBuffer: 200*1024,
+    killSignal: "SIGTERM"
+  }
+  projectSTD2 = cp.spawn("node", [projName + "Proxy.js"], exec_options2)
+  projectSTD2.stdout.on("data", stdout =>{
+    console.log(stdout)
+
+  })
+  
 })
 
 
@@ -288,13 +265,19 @@ serverApp.get("/checkactiveserver", (req,res) => {
 
 serverApp.post('/getport', (req,res) => {
   console.log(req)
+
 })
 
 
 serverApp.post("/delproject", (req,res) => {
   projectSTD.kill('SIGTERM');
+  projectSTD2.kill('SIGTERM');
+
   activeProject = "";
   activePort = 0
+  var portToClose = projectsToPorts[req.body.name]
+
+
   console.log(process.cwd() + "\\projects\\"+req.body.name)
   rimraf(process.cwd() + "\\projects\\"+req.body.name, function (err) {
     if (err){
@@ -309,6 +292,7 @@ serverApp.post("/delproject", (req,res) => {
 
 serverApp.get("/closeserver", (req,res) => {
   projectSTD.kill('SIGTERM');
+  projectSTD2.kill('SIGTERM');
   res.send(activeProject)
   activeProject = "";
   activePort = 0
