@@ -1,42 +1,54 @@
- <!DOCTYPE html>
- <html>
- <head>
-	 <meta charset="utf-8">
-	 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-	 <link rel="stylesheet" href="index.css"/>
-	 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-	 
-	 <title>New Project</title>
- </head>
- <body>
-	 <a href="index.html"></aref> <button type="button" id="go-back" class="btn btn-primary animate__animated animate__fadeIn">Go Back</button></a>
-	 <div class="alert alert-success" id="activeproj" role="alert" class="animate__animated animate__fadeIn">
-		 A simple success alert—check it out!
-	   </div>
-	   <div id="title-container" class="animate__animated animate__fadeInDown"><div id="title"><b><u>New Project</u></b></div></div>
-	   <div class="input-group mb-3 animate__animated animate__fadeIn">
-		   <span class="input-group-text" id="basic-addon1">Enter website path: </span>
-		   <input type="text" class="form-control" placeholder="path/to/website/index.html" aria-label="Username" aria-describedby="basic-addon1">
-		   
-	   </div>
-		   <div class="input-group mb-3 animate__animated animate__fadeIn">
-			   <span class="input-group-text" id="basic-addon2">Enter project name: </span>
-			   <input type="text" class="form-control" placeholder="Project Name" aria-label="Recipient's username" aria-describedby="basic-addon2">
-			   
-		   </div>
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+	  <meta charset="utf-8">
+	  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+	  <link rel="stylesheet" href="index.css"/>
+	  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+	  <title>New Project</title>
+  </head>
+  <body>
+	  <a href="index.html"> <button type="button" id="go-back" class="btn btn-primary animate__animated animate__fadeIn">Go Back</button></a>
+	  <div class="alert alert-success d-none" id="activeproj" role="alert" class="animate__animated animate__fadeIn">
+		  A simple success alert—check it out!
+	  </div>
+	  <div id="title-container" class="animate__animated animate__fadeInDown">
+		  <div id="title"><b><u>New Project</u></b></div>
+	  </div>
+	  <form id="projForm">
+		<div class="form-group mb-3 animate__animated animate__fadeIn col-md-8 offset-md-2" id="projForm">
+			<label for="websitePath" class="form-label">Website Path</label>
+			<input type="input" class="form-control" id="websitePathID" aria-describedby="emailHelp" data-toggle="tooltip" title="This field is required" required>
+			<div  class="form-text ErrorTip">e.g path/to/website/index.html</div>
+			<div id="pathError" class="invalid-feedback" style="display:none">Invalid Website Path (Must be a valid path to a folder)</div>
+
+		</div>
+		<div class="form-group mb-3 animate__animated animate__fadeIn col-md-8 offset-md-2">
+			<label for="projName" class="form-label">Enter Project Name</label>
+			<input type="input" class="form-control" id="projNameID" aria-describedby="emailHelp" data-toggle="tooltip" title="This field is required" required>
+			<div class="form-text ErrorTip">E.g Example Website</div>
+			<div id="nameError" class="invalid-feedback" style="display:none">Invalid name </div>
+
+		</div>
+		<div class="form-group mb-3 animate__animated animate__fadeIn col-md-8 offset-md-2">
+			<label for="portNum" class="form-label">Enter Port Number</label>
+			<input type="input" class="form-control" id="portNumID" aria-describedby="emailHelp" data-toggle="tooltip" title="This field is required" required>
+			<div class="form-text ErrorTip">A number between 49152-65535</div>
+			<div id="portError" class="invalid-feedback" style="display:none">Invalid port number (must be a number between 49152-65535) </div>
 		
-		   <!--create a textbox which gets the port number-->
-		   <div class="input-group mb-3 animate__animated animate__fadeIn">
-			   <span class="input-group-text" id="basic-addon3">Enter port number: </span>
-			   <input type="text" class="form-control" placeholder="Port Number" id="portNum" aria-label="Recipient's username" aria-describedby="basic-addon3">
-		   </div>
-	   
-	   <script type="text/javascript" src="functions.js"></script>
-   
-	   <div class="input-group mb-3">
-	<input class="btn btn-primary submitButton animate__animated animate__fadeIn" id="submitbutton"  onclick="chainFunc()" value="Create New Project">
-	<script type="text/javascript" src="checkActiveServer.js"></script>
-</div>
+		
+		</div>
+		<div class="form-group mb-3 col-md-8 offset-md-2">
+			<label for="submitButton" class="form-label">Create new project</label>
+			<input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Create New Project" onclick="chainFunc()">
+		</div>
+	</form>
+	  <script type="text/javascript" src="functions.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-5D5v5O5M5w5F/P5U6zjU6xQkN7/N6hWZ8i37vGvDZj1KjA2i8xkzvF1gjIbzXjKW" crossorigin="anonymous"></script>
+<script src="index.js"></script>
+
 </body>
 </html>
- 

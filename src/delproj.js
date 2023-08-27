@@ -8,10 +8,19 @@ if (this.readyState == 4 && this.status == 200) {
         
     projects = JSON.parse(this.responseText)
     var buttons = document.getElementsByClassName("list-group-item-action")
+    if (projects.length == 0){
+      buttons[0].classList.remove("hide")
+      buttons[0].innerHTML = "No projects found to delete - go create one!"
+      // make this a link to the create project page 
+      buttons[0].setAttribute('onclick','window.location.href = "newproj.html"')
+      
+  } else{
     for (i = 0; i<projects.length; i++){
-        buttons[i].classList.remove("hide")
-        buttons[i].innerHTML = "Delete: " + projects[i]
-    }
+      buttons[i].classList.remove("hide")
+      buttons[i].innerHTML = "Delete: " + projects[i]
+  }
+  }
+
 }
 }
 

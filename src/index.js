@@ -75,19 +75,20 @@ function addCoreCode(websitePath, port){
 
 const express = require("express")
 const app = express()
-
+const port = ${port}
+const websitePath = "${websitePath}"
 app.get('/', (req,res) => {
-res.sendFile('${websitePath}' +'/index.html')  
+res.sendFile(websitePath +'/index.html')  
   })
 
 
 
-app.listen(${port}, function(err){
+app.listen(port, function(err){
   if (err) console.log(err)
   console.log("server listening on port ${port}" )
 })
 
-app.use(express.static('${websitePath}'))
+app.use(express.static(websitePath))
 
 
 `
@@ -120,17 +121,17 @@ return packageJ
 
 function createProxy (port){
   const proxy = `
-  const http = require('http');
-  const httpProxy = require('http-proxy');
+const http = require('http');
+const httpProxy = require('http-proxy');
 
-  // Create a proxy server
-  const proxy = httpProxy.createProxyServer({});
+// Create a proxy server
+const proxy = httpProxy.createProxyServer({});
 
-  // Listen for incoming traffic on the specified port
-  const port = 80; // replace with the desired port
-  http.createServer((req, res) => {
-    proxy.web(req, res, { target: 'http://localhost:${port}' });
-  }).listen(port);
+// Listen for incoming traffic on the specified port
+const port = ${port}; // replace with the desired port
+http.createServer((req, res) => {
+  proxy.web(req, res, { target: 'http://localhost:' + port });
+}).listen(80);
   `
   return proxy
 }
@@ -186,6 +187,17 @@ function createServer(projectName, database, port, htmlOrPhP, websitePath){
         console.log("added proxy data")
       }
     })
+
+    // make the config file, which will be used to store the port number and other data
+
+    fs.writeFile("projects/"+projectName+"/" + "config.json", JSON.stringify({port: port, projectName: projectName, websitePath: websitePath}), (err,fd) =>{
+      if (err){
+        console.log(err)
+      }else{
+        console.log("added config data")
+      }
+    })
+
 }
 
 
@@ -268,25 +280,29 @@ serverApp.post('/getport', (req,res) => {
 
 })
 
-
-serverApp.post("/delproject", (req,res) => {
+function delProject(projectName){
   projectSTD.kill('SIGTERM');
   projectSTD2.kill('SIGTERM');
 
   activeProject = "";
   activePort = 0
-  var portToClose = projectsToPorts[req.body.name]
+  var portToClose = projectsToPorts[projectName]
 
 
-  console.log(process.cwd() + "\\projects\\"+req.body.name)
-  rimraf(process.cwd() + "\\projects\\"+req.body.name, function (err) {
+  console.log(process.cwd() + "\\projects\\"+projectName)
+  rimraf(process.cwd() + "\\projects\\"+projectName, function (err) {
     if (err){
       console.log(err)
-      res.send("Sorry, there was an error deleting that project. Please close any active servers and try again.")
+      return "Sorry, there was an error deleting that project. Please close any active servers and try again."
     } else{
-      res.send("Project deleted successfully")
+      return "Project deleted successfully"
     }
   })
+}
+
+serverApp.post("/delproject", (req,res) => {
+  res.send(delProject(req.body.name))
+  
 })
 
 
@@ -331,3 +347,83 @@ serverApp.post("/checkwebsitepath", (req,res) => {
       res.send(JSON.stringify("false"))
     }})
 
+serverApp.post("/getconfigsettings", (req,res) => {
+  var config = fs.readFileSync(process.cwd() + "\\projects\\" + req.body.name + "\\config.json")
+  res.send(config)
+})
+const readline = require('readline');
+
+async function changePort(filename, newPort) {
+
+  const fileStream = fs.createReadStream(filename);
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity
+  });
+  
+  let lines = [];
+  
+  for await (const line of rl) {
+    console.log(line)
+    if (line.includes('const port =')) {
+      lines.push(`const port = ${newPort};`);
+    } else {
+      lines.push(line);
+    }
+  }
+  
+  fs.writeFileSync(filename, lines.join('\n'));
+}
+
+async function changeWebsitePath(serverFilePath, newPath){
+  const fileStream = fs.createReadStream(serverFilePath);
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity
+  });
+
+  let lines = [];
+
+  for await (const line of rl) {
+    console.log(line)
+    if (line.includes('const websitePath =')) {
+      lines.push(`const websitePath = "${newPath}";`);
+    } else {
+      lines.push(line);
+    }
+  }
+
+  fs.writeFileSync(serverFilePath, lines.join('\n'));
+}
+
+
+function saveConfigSettings(oldname, projectName, port, websitePath){
+  var config = fs.readFileSync(process.cwd() + "\\projects\\" + oldname + "\\config.json")
+  var configObj = JSON.parse(config)
+  configObj.port = port
+  configObj.websitePath = websitePath
+  fs.writeFileSync(process.cwd() + "\\projects\\" + oldname + "\\config.json", JSON.stringify(configObj))
+
+  changePort(process.cwd() + "\\projects\\" + oldname + "\\" + oldname + ".js", port)
+  changePort(process.cwd() + "\\projects\\" + oldname + "\\" + oldname + "Proxy.js", port)
+
+  if (oldname != projectName) {
+    fs.renameSync(process.cwd() + "\\projects\\" + oldname, process.cwd() + "\\projects\\" + projectName)
+    fs.renameSync(process.cwd() + "\\projects\\" + projectName + "\\" + oldname + ".js", process.cwd() + "\\projects\\" + projectName + "\\" + projectName + ".js")
+    fs.renameSync(process.cwd() + "\\projects\\" + projectName + "\\" + oldname + "Proxy.js", process.cwd() + "\\projects\\" + projectName + "\\" + projectName + "Proxy.js")
+  }
+
+  changeWebsitePath(process.cwd() + "\\projects\\" + projectName + "\\" + projectName + ".js", websitePath)
+
+
+
+
+
+}
+
+serverApp.post("/saveconfigsettings", (req,res) => {
+  console.log(req.body)
+  console.log("here")
+  saveConfigSettings(req.body.oldName, req.body.configdata.projectName, req.body.configdata.port, req.body.configdata.websitePath)
+  
+})

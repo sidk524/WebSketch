@@ -1,0 +1,17 @@
+{
+  "name": "Tech website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Tech website.js",
+  "scripts": {
+    "test": "Tech website",
+    "start": "node Tech website.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "npm": "^7.21.0"
+  }
+}

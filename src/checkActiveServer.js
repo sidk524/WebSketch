@@ -10,7 +10,7 @@ getServer.onreadystatechange = function() {
             document.getElementById("activeproj").innerHTML = "No active webserver"
             
         } else{
-            document.getElementById("activeproj").innerHTML = "Active Webserver: " + active.project +"<br>" + "Running on port: " + active.port
+            document.getElementById("activeproj").innerHTML = "Active Webserver: " + active.project +"<br>" + "Running on external port: " + active.port + "<br>" + "Running on internal port: 80"
         }
     }
 }

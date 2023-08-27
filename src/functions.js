@@ -7,7 +7,6 @@ var getServer
 var port
 var websitePath
 
-
 function checkWebsitePath(){
   var websitePath = document.getElementsByClassName("form-control")[0].value.replace(/\\/g, "/")
   var websitePathCheck = new XMLHttpRequest()
@@ -30,7 +29,24 @@ function checkWebsitePath(){
 }
 
 
+function validatePort() {
+  var portNum = document.getElementById("portNumID").value;
+        var portError = document.getElementById("portError");
+
+        if (portNum < 49152 || portNum > 65535) {
+            portNumID.classList.add("is-invalid");
+            portError.style.display = "block";
+            return false;
+        } else {
+            portNumID.classList.remove("is-invalid");
+            portError.style.display = "none";
+            return true;
+        }
+}
+
+
 function chainFunc(){
+  event.preventDefault();
   var websitePath = document.getElementsByClassName("form-control")[0].value.replace(/\\/g, "/")
   var websitePathCheck = new XMLHttpRequest()
   websitePathCheck.open("POST", "http://localhost:3002/checkwebsitepath", false)
@@ -40,60 +56,52 @@ function chainFunc(){
   websitePathCheck.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var response = JSON.parse(this.responseText)
-      if (response == "true"){
-        inputs = document.getElementsByClassName("form-control")
-        postServer = new XMLHttpRequest();
-        postServer.open("POST", "http://localhost:3002/createserver", true);
-        path = inputs[0].value.replace(/\\/g, "/")
-        name = inputs[1].value
-        port = document.getElementById("portNum").value
-        postServer.setRequestHeader("Accept", "application/json");
-        postServer.setRequestHeader("Content-Type", "application/json");
-        data = `{
-          "path": "${path}",
-          "name": "${name}",
-          "port":"${port}"
-        }`
-      postServer.send(data)
-      postServer.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          alert("Webserver Succesfully created")
-        } 
-      };
-      } else{
-        alert("Invalid website path")
-      }
+        if (response == "true"){
+          websitePathID.classList.remove("is-invalid");
+          pathError.style.display = "none";
+          if(validatePort()) {
+            inputs = document.getElementsByClassName("form-control")
+            postServer = new XMLHttpRequest();
+            postServer.open("POST", "http://localhost:3002/createserver", true);
+            path = inputs[0].value.replace(/\\/g, "/")
+            name = inputs[1].value
+            port = inputs[2].value
+            postServer.setRequestHeader("Accept", "application/json");
+            postServer.setRequestHeader("Content-Type", "application/json");
+            data = `{
+              "path": "${path}",
+              "name": "${name}",
+              "port":"${port}"
+            }`
+          postServer.send(data)
+          postServer.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+              alert("Webserver Succesfully created")
+            } 
+          };
+      } 
+        } else{
+          websitePathID.classList.add("is-invalid");
+          pathError.style.display = "block";
+        }
+      
+      
     }
   }
   websitePathCheck.send(data)
 
 }
 var text;
-function checkEmpty(){
-  text = document.getElementsByClassName("form-control")[0].value
-  text1 = document.getElementsByClassName("form-control")[1].value
-  
-  if (text == "" || text1 == ""){
-    document.getElementById("submitbutton").disabled = true;
-
-  } else{
-    document.getElementById("submitbutton").disabled = false;
-  }
-}
 
 
-
-// function displayPortNum(){
- 
-
-//   var portInput = document.getElementsByClassName("form-range")[0].value
-//   var displayPort = document.getElementsByClassName("form-label")[0]
-//   displayPort.innerHTML = `Port Number: ${portInput}`
- 
-
-// }
-
+var form = document.getElementById("projForm");
+   form.addEventListener("submit", function(event) {
+       var isValid = form.checkValidity();
+       if (!isValid) {
+           event.preventDefault();
+           event.stopPropagation();
+       }
+       form.classList.add("was-validated");
+   });
 
 
-//setInterval(displayPortNum, 10)
-setInterval(checkEmpty, 100)
