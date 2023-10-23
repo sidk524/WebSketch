@@ -54,7 +54,7 @@ function manageProject(name){
 
 
 
-var openProjectRequest
+var openProjectRequest;
 function openProject(name){
     openProjectRequest = new XMLHttpRequest()
     openProjectRequest.open("POST", "http://localhost:3002/openproject", true)
