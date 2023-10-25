@@ -9,10 +9,15 @@
     <title>Manage projects</title>
 </head>
 <body>
-    <a href="index.html"> <button type="button" id="go-back" class="btn btn-primary animate__animated animate__fadeIn">Go Back</button></a>
-    <div class="alert alert-success d-none" id="activeproj" role="alert" class="animate__animated animate__fadeIn">
+     
+    <script type="text/javascript" src="checkActiveServer.js"></script>
+    <div class="alert alert-success" id="activeproj" role="alert">
         A simple success alert—check it out!
-    </div>
+      </div>
+    <script type="text/javascript" src="manageProj.js"></script>
+    <a href="index.html"> <button type="button" id="go-back" class="btn btn-primary animate__animated animate__fadeIn">Go Back</button></a>
+   
+
     <div id="title-container" class="animate__animated animate__fadeInDown">
         <div id="title"><b><u>Manage Project</u></b></div>
     </div>
@@ -40,17 +45,20 @@
           
       </div>
       <div class="form-group mb-3 col-md-8 offset-md-2">
-          <label for="submitButton" class="form-label">Start project</label>
-          <input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Create New Project" onclick="chainFunc()">
+          <label for="submitButton" class="form-label">Run project</label>
+          <input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Run project" onclick="openProject()">
       </div>
       <div class="form-group mb-3 col-md-8 offset-md-2">
-        <label for="submitButton" class="form-label">Save project</label>
-        <input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Save Project" onclick="saveSettings()">
+        <label for="submitButton" class="form-label">Save settings</label>
+        <input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Save Settings" onclick="saveSettings()">
     </div>
   </form>
     <script type="text/javascript" src="functions.js"></script>
-    <script type="text/javascript" src="openproj.js"></script>
-    <script type="text/javascript" src="manageProj.js"></script>
+    <script>
+        console.log("Hello world")
+        loadSettings();
+
+    </script>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-5D5v5O5M5w5F/P5U6zjU6xQkN7/N6hWZ8i37vGvDZj1KjA2i8xkzvF1gjIbzXjKW" crossorigin="anonymous"></script>

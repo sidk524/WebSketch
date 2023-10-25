@@ -4,6 +4,10 @@ body {
   background-color:  #28282B;
 }
 
+#activeproj {
+  z-index: 10;
+}
+
 #title-container{
   margin: auto;
   padding: 10px;
