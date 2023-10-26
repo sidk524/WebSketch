@@ -1,8 +1,8 @@
 
     const express = require("express");
     const app = express();
-const port = 50002;
-const websitePath = "C:/Users/great/OneDrive/Documents/Example websites/Tech Website";
+    const port = 50000;
+const websitePath = "C:/Users/great/OneDrive/Documents/Important Stuff/flash_games";
     app.get('/', (req,res) => {
       res.sendFile(websitePath +'/index.html');  
     });

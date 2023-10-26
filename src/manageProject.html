@@ -45,12 +45,16 @@
           
       </div>
       <div class="form-group mb-3 col-md-8 offset-md-2">
-          <label for="submitButton" class="form-label">Run project</label>
-          <input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Run project" onclick="openProject()">
+          <label for="submitButton" id="runButtonText" class="form-label">Run project</label>
+          <input type="submit" class="form-control btn btn-primary" id="runButton" aria-describedby="emailHelp" value="Run project" onclick="openProject()">
       </div>
       <div class="form-group mb-3 col-md-8 offset-md-2">
         <label for="submitButton" class="form-label">Save settings</label>
-        <input type="submit" class="form-control btn btn-primary" id="submitButton" aria-describedby="emailHelp" value="Save Settings" onclick="saveSettings()">
+        <input type="submit" class="form-control btn btn-primary" id="saveButton" aria-describedby="emailHelp" value="Save Settings" onclick="saveSettings()">
+    </div>
+    <div class="form-group mb-3 col-md-8 offset-md-2">
+        <label for="submitButton" class="form-label">Delete project</label>
+        <input type="submit" class="form-control btn btn-danger" id="delButton" aria-describedby="emailHelp" value="Delete Project" onclick="delProject()">
     </div>
   </form>
     <script type="text/javascript" src="functions.js"></script>

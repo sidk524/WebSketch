@@ -1,0 +1,17 @@
+{
+      "name": "flash games",
+      "version": "1.0.0",
+      "description": "",
+      "main": "flash games.js",
+      "scripts": {
+            "test": "flash games",
+            "start": "node flash games.js"
+      },
+      "keywords": [],
+      "author": "",
+      "license": "ISC",
+      "dependencies": {
+            "express": "^4.18.2",
+            "npm": "^7.21.0"
+      }
+}

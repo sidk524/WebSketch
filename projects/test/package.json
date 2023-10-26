@@ -1,11 +1,11 @@
 {
-      "name": "Tech website",
+      "name": "test",
       "version": "1.0.0",
       "description": "",
-      "main": "Tech website.js",
+      "main": "test.js",
       "scripts": {
-            "test": "Tech website",
-            "start": "node Tech website.js"
+            "test": "test",
+            "start": "node test.js"
       },
       "keywords": [],
       "author": "",

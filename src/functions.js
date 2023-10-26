@@ -76,7 +76,9 @@ function chainFunc(){
           postServer.send(data)
           postServer.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
+              let focusedElement = document.activeElement;
               alert("Webserver Succesfully created")
+              focusedElement.focus();
             } 
           };
       } 

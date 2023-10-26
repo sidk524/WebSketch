@@ -5,6 +5,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const express = require("express");
 const fs = require("fs");
+const util = require('util');
 const dir = require("node-dir");
 const { install, setRootDir } = require('lmify');
 const bodyParser = require("body-parser");
@@ -12,14 +13,16 @@ const cp = require("child_process");
 const { stderr } = require('process');
 const rimraf = require("rimraf");
 const readline = require('readline');
-var httpProxy = require('http-proxy');
+const httpProxy = require('http-proxy');
+
 
 
 // ------------------
 // GLOBAL CONSTANTS AND VARIABLES
 // ------------------
-const serverApp = express();
 
+const serverApp = express();
+const rimrafAsync = util.promisify(rimraf);
 var activeProject = "";
 var htmlFiles = [];
 var phpFiles = [];
@@ -210,11 +213,14 @@ serverApp.get("/getprojects", (req,res)=>{
 })
 
 serverApp.post('/openproject', (req,res) => {
+
   projectSTD.kill('SIGTERM');
   projectSTD2.kill('SIGTERM');
   var projName = req.body.name
   activeProject = projName
   console.log("node "+projName + ".js")
+
+
   const exec_options = {
     cwd: process.cwd() + "\\projects\\" + projName,
     env:null,
@@ -223,6 +229,7 @@ serverApp.post('/openproject', (req,res) => {
     maxBuffer: 200*1024,
     killSignal: "SIGTERM"
   }
+
   projectSTD = cp.spawn("node", [projName + ".js"], exec_options)
   projectSTD.stdout.on("data", stdout =>{
     stdout = stdout.toString().split("port ")
@@ -231,6 +238,7 @@ serverApp.post('/openproject', (req,res) => {
     res.send(port)
     console.log(stdout)
   })
+
   // run the proxy file thats in the same directory
   console.log("node "+projName + "Proxy.js")
   const exec_options2 = {
@@ -241,6 +249,7 @@ serverApp.post('/openproject', (req,res) => {
     maxBuffer: 200*1024,
     killSignal: "SIGTERM"
   }
+
   projectSTD2 = cp.spawn("node", [projName + "Proxy.js"], exec_options2)
   projectSTD2.stdout.on("data", stdout =>{
     console.log(stdout)
@@ -307,6 +316,18 @@ serverApp.post("/saveconfigsettings", (req,res) => {
   
 })
 
+serverApp.post("/delproject", async (req, res) => {
+  var projectName = req.body.name;
+  try {
+      var result = await delProject(projectName);
+      console.log(result);
+      res.send(result);
+  } catch (error) {
+      console.log(error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
 
 serverApp.listen(3002, function(err) {
   if (err) console.log(err);
@@ -317,24 +338,23 @@ serverApp.listen(3002, function(err) {
 // UTILITY FUNCTIONS
 // ------------------
 
-function delProject(projectName) {
+async function delProject(projectName) {
   projectSTD.kill('SIGTERM');
   projectSTD2.kill('SIGTERM');
-
   activeProject = "";
   activePort = 0
-  var portToClose = projectsToPorts[projectName]
 
-
-  console.log(process.cwd() + "\\projects\\"+projectName)
-  rimraf(process.cwd() + "\\projects\\"+projectName, function (err) {
-    if (err){
-      console.log(err)
-      return "Sorry, there was an error deleting that project. Please close any active servers and try again."
-    } else{
-      return "Project deleted successfully"
-    }
-  })
+  if (fs.existsSync(process.cwd() + "\\projects\\"+projectName)){
+    try {
+      await rimrafAsync(process.cwd() + "\\projects\\"+projectName)
+      return "1"
+    } catch (err) {
+        console.log(err)
+        return "3"
+      } 
+    } else {
+    return "2"
+  }
 }
 
 async function changePort(filename, newPort) {
@@ -381,24 +401,24 @@ async function changeWebsitePath(serverFilePath, newPath) {
 }
 
 function saveConfigSettings(oldname, projectName, port, websitePath) {
-  var config = fs.readFileSync(process.cwd() + "\\projects\\" + oldname + "\\config.json")
+  try {
+    if (oldname != projectName) {
+      fs.renameSync(process.cwd() + "\\projects\\" + oldname, process.cwd() + "\\projects\\" + projectName)
+      fs.renameSync(process.cwd() + "\\projects\\" + projectName + "\\" + oldname + ".js", process.cwd() + "\\projects\\" + projectName + "\\" + projectName + ".js")
+      fs.renameSync(process.cwd() + "\\projects\\" + projectName + "\\" + oldname + "Proxy.js", process.cwd() + "\\projects\\" + projectName + "\\" + projectName + "Proxy.js")
+    }}
+    catch (err) {
+      console.log(  err)
+    } 
+  var config = fs.readFileSync(process.cwd() + "\\projects\\" + projectName + "\\config.json")
   var configObj = JSON.parse(config)
   configObj.port = port
   configObj.websitePath = websitePath
-  fs.writeFileSync(process.cwd() + "\\projects\\" + oldname + "\\config.json", JSON.stringify(configObj))
+  fs.writeFileSync(process.cwd() + "\\projects\\" + projectName + "\\config.json", JSON.stringify(configObj))
 
-  changePort(process.cwd() + "\\projects\\" + oldname + "\\" + oldname + ".js", port)
-  changePort(process.cwd() + "\\projects\\" + oldname + "\\" + oldname + "Proxy.js", port)
-  try {
-  if (oldname != projectName) {
-    fs.renameSync(process.cwd() + "\\projects\\" + oldname, process.cwd() + "\\projects\\" + projectName)
-    fs.renameSync(process.cwd() + "\\projects\\" + projectName + "\\" + oldname + ".js", process.cwd() + "\\projects\\" + projectName + "\\" + projectName + ".js")
-    fs.renameSync(process.cwd() + "\\projects\\" + projectName + "\\" + oldname + "Proxy.js", process.cwd() + "\\projects\\" + projectName + "\\" + projectName + "Proxy.js")
-  }}
-  catch (err) {
-    console.log(  err)
-  } 
-
+  changePort(process.cwd() + "\\projects\\" + projectName + "\\" + projectName + ".js", port)
+  changePort(process.cwd() + "\\projects\\" + projectName + "\\" + projectName + "Proxy.js", port)
+  
   changeWebsitePath(process.cwd() + "\\projects\\" + projectName + "\\" + projectName + ".js", websitePath)
 
 }

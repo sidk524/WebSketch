@@ -1,5 +1,5 @@
 // ==========================
-// PROJECT MENU MANAGEMENT
+// PROJECT MANAGEMENT FUNCTIONS
 // ==========================
 
 var projects = [];
@@ -8,6 +8,7 @@ var getServer = new XMLHttpRequest();
 /**
  * Opens the project menu by fetching a list of projects from the server.
  * Updates the list of buttons to show available projects.
+ * This is called when openproj.html is loaded.
  */
 function openProjectMenu(){
     getServer.open("GET", "http://localhost:3002/getprojects", true);
@@ -25,9 +26,6 @@ function openProjectMenu(){
                     buttons[i].classList.remove("hide");
                     buttons[i].innerHTML = projects[i];
                 }
-                buttons[i+1].classList.remove("hide");
-                buttons[i+1].innerHTML = "Close active server";
-                buttons[i+1].setAttribute('onclick','closeProj()');
             }
         }
     };
@@ -37,14 +35,20 @@ function openProjectMenu(){
  * Closes the currently active project's server.
  */
 function closeProj(){
+    event.preventDefault();
     if (document.getElementById("activeproj").innerHTML.includes("Active Webserver")){
         getServer.open("GET", "http://localhost:3002/closeserver", true);
         getServer.send();
         getServer.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 var active = this.responseText;
-                alert("Closed server "+ active);
                 document.getElementById("activeproj").innerHTML = "No active webserver";
+                var button = document.getElementById("runButton");
+                var buttonText = document.getElementById("runButtonText");
+                buttonText.innerHTML = "Run Server";
+                button.value = "Run Server";
+                button.setAttribute('onclick','openProject()');
+
             }
         };
     } else {
@@ -70,8 +74,57 @@ function openProject(){
     openProjectRequest.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             document.getElementById("activeproj").innerHTML = "Active Webserver: " + name + "<br>Running on internal port: "+ this.responseText + "<br>Running on external port: 80";
+            var button = document.getElementById("runButton");
+            var buttonText = document.getElementById("runButtonText");
+            buttonText.innerHTML = "Stop Server";
+            button.value = "Stop Server";
+            button.setAttribute('onclick','closeProj()');
+
         }
-    };
+
+    }; 
+}
+
+
+function delProject(name){
+    event.preventDefault()
+    // open a confirmation dialog
+    let focusedElement = document.activeElement;
+
+    var confirmation = confirm("Are you sure you want to delete this project?")
+    focusedElement.focus();
+
+    if (confirmation == true){
+        
+        var deleteProjectRequest
+        var projNameInput = document.getElementById("projNameID")
+        name = projNameInput.value
+        deleteProjectRequest = new XMLHttpRequest()
+        deleteProjectRequest.open("POST", "http://localhost:3002/delproject", true)
+        deleteProjectRequest.setRequestHeader("Accept", "application/json");
+        deleteProjectRequest.setRequestHeader("Content-Type", "application/json");
+        var data = `{"name": "${name}"}`
+        if ( document.getElementById("activeproj").innerHTML.split(" ").includes(name)){
+        document.getElementById("activeproj").innerHTML = "No active webserver"
+        }
+        deleteProjectRequest.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200 ) {
+            var res = this.responseText
+            if (res == "1") {
+                alert("Project deleted successfully")
+                window.location.href = "openproj.html"
+            }  else if (res == "2" ){
+                delProject(getParameterByName("name"))
+            } else {
+                alert("Project deletion failed, close any active servers and try again")
+            }
+            
+            document.getElementById("activeproj").innerHTML = "No active webserver"
+
+            }
+        };
+        deleteProjectRequest.send(data)
+    }
 }
 
 // ==========================
